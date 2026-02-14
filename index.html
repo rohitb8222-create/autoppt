@@ -2,86 +2,91 @@
 <html lang="mr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sumeet Elko - Advanced Generator</title>
+    <meta name="viewport" content="width=980"> <title>Sumeet Elko - HD Report Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
-        :root { --blue: #1e3a8a; --accent: #3b82f6; --green: #10b981; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; margin: 0; padding: 0; touch-action: pan-y; }
+        :root { --blue: #1e3a8a; --accent: #3b82f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; margin: 0; padding: 0; overflow-x: auto; }
         
         .header { 
-            background: var(--blue); color: white; padding: 10px; 
-            position: sticky; top: 0; z-index: 1000; text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #1a1a1a; color: white; padding: 15px; 
+            position: sticky; top: 0; z-index: 2000; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%;
         }
-        .btn-panel { display: flex; justify-content: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-        .btn { padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; font-size: 14px; }
+        .btn-panel { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; font-size: 14px; }
         .btn-add { background: var(--accent); }
-        .btn-intro { background: #f59e0b; }
-        .btn-pdf { background: var(--green); flex: 1; min-width: 140px; }
-        .btn-jpg { background: #6366f1; flex: 1; min-width: 140px; }
+        .btn-pdf { background: #10b981; }
         .btn-del { background: #ef4444; }
 
-        .quality-panel { background: rgba(255,255,255,0.1); padding: 5px; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; }
-
+        /* Slide Layout - No Scale for Stability */
         #container { 
-            padding: 20px 10px; display: flex; flex-direction: column; 
-            align-items: center; gap: 30px; 
-            transform: scale(0.38); 
-            transform-origin: top center;
+            padding: 50px 20px; display: flex; flex-direction: column; 
+            align-items: center; gap: 40px; min-width: 1000px;
         }
-
-        @media (min-width: 1000px) { #container { transform: scale(1); } }
 
         .slide {
             width: 960px; height: 540px;
-            background-image: url('./bg.jpg'); /* तुमची इमेज इथे bg.jpg नावाने असावी */
+            background-image: url('./bg.jpg'); 
             background-size: 100% 100%;
             background-repeat: no-repeat;
             background-color: white;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+            overflow: hidden; /* टेक्स्ट बाहेर जाणार नाही */
         }
 
-        .slide-counter { position: absolute; bottom: 10px; right: 20px; background: rgba(0,0,0,0.5); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; }
-        .intro-area { position: absolute; left: 70px; top: 35%; width: 550px; text-align: left; }
-        .main-t { font-family: 'Impact', sans-serif; font-size: 70px; color: var(--blue); outline: none; text-transform: uppercase; line-height: 1; }
+        .slide-counter { position: absolute; bottom: 15px; right: 25px; background: rgba(0,0,0,0.6); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; z-index: 100; }
 
-        .photo-grid { display: flex; width: 88%; height: 65%; gap: 20px; position: absolute; top: 100px; left: 6%; }
-        .photo-item { flex: 1; height: 100%; border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); position: relative; overflow: hidden; background: #eee; }
-        .photo-item img { width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
+        /* Text Alignment Fix */
+        .intro-area { 
+            position: absolute; left: 70px; top: 35%; width: 550px; 
+            text-align: left; pointer-events: auto;
+        }
+        .main-t { 
+            font-family: 'Impact', sans-serif; font-size: 70px; color: var(--blue); 
+            outline: none; text-transform: uppercase; line-height: 1.1;
+            word-wrap: break-word; min-height: 80px;
+        }
 
-        .text-overlay { position: absolute; bottom: 15px; left: 15px; background: rgba(0,0,0,0.8); color: white; padding: 8px 20px; font-size: 22px; border-radius: 4px; font-weight: bold; display: none; text-transform: uppercase; }
+        .photo-grid { display: flex; width: 88%; height: 65%; gap: 20px; position: absolute; top: 105px; left: 6%; }
+        .photo-item { flex: 1; height: 100%; border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; background: #eee; }
+        .photo-item img { width: 100%; height: 100%; object-fit: fill; }
 
-        .label-selector { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 35px rgba(0,0,0,0.5); display: none; flex-direction: column; gap: 15px; z-index: 200; }
-        .select-btn { background: #333; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 20px; }
+        .text-overlay { 
+            position: absolute; bottom: 15px; left: 15px; background: rgba(0,0,0,0.85); 
+            color: white; padding: 8px 20px; font-size: 20px; border-radius: 4px; 
+            font-weight: bold; display: none; text-transform: uppercase;
+        }
 
-        .slide-ctrl { position: absolute; top: 10px; right: 10px; display: flex; gap: 10px; z-index: 100; }
-        .photo-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; }
-        .mini-btn { font-size: 16px; padding: 8px 12px; background: #333; color: white; border: none; cursor: pointer; border-radius: 6px; }
+        /* Label UI Fix */
+        .label-selector {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 20px; border-radius: 12px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); display: none; flex-direction: column; gap: 10px; z-index: 500;
+        }
+        .select-btn { background: #333; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        .slide-ctrl { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; z-index: 150; }
+        .photo-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 160; }
+        .mini-btn { font-size: 14px; padding: 8px 12px; background: rgba(0,0,0,0.7); color: white; border: none; cursor: pointer; border-radius: 4px; }
+
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; z-index: 9999; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; }
     </style>
 </head>
 <body>
 
+<div id="loader">HD PDF तयार होत आहे... कृपया थांबा 🚀</div>
+
 <div class="header">
-    <h3 style="margin:0;">Sumeet Elko - Advanced Generator</h3>
+    <h3 style="margin:0;">Sumeet Elko - PRO Generator</h3>
     <div class="btn-panel">
         <input type="file" id="files" accept="image/*" multiple style="display:none" onchange="createPhotoSlides()">
-        <button class="btn btn-add" onclick="document.getElementById('files').click()">📷 Generate Report</button>
-        <button class="btn btn-intro" onclick="addIntro()">📄 Add Intro</button>
-        <button class="btn btn-pdf" onclick="saveAsPDF()">📥 PDF</button>
-        <button class="btn btn-jpg" onclick="saveAsJPG()">🖼️ JPG</button>
-    </div>
-    
-    <div class="quality-panel">
-        Quality: 
-        <select id="qualitySelect" style="border-radius: 4px; padding: 2px;">
-            <option value="1">Low</option>
-            <option value="1.5" selected>Medium</option>
-            <option value="2.5">High</option>
-        </select>
+        <button class="btn btn-add" onclick="document.getElementById('files').click()">📷 GENERATE REPORT</button>
+        <button class="btn btn-pdf" style="background: #10b981;" onclick="saveAsPDF()">📥 DOWNLOAD HD PDF</button>
     </div>
 </div>
 
@@ -89,15 +94,14 @@
 
 <script>
     const container = document.getElementById('container');
-    new Sortable(container, { animation: 150, handle: '.slide', delay: 200, delayOnTouchOnly: true, onEnd: updateSlideNumbers });
+    new Sortable(container, { animation: 150, handle: '.slide', onEnd: updateSlideNumbers });
 
     window.onload = () => addIntro();
 
     function updateSlideNumbers() {
-        const slides = document.querySelectorAll('.slide');
-        slides.forEach((slide, index) => {
-            let counter = slide.querySelector('.slide-counter');
-            if (counter) counter.innerText = `Slide ${index + 1}`;
+        document.querySelectorAll('.slide').forEach((s, i) => {
+            let c = s.querySelector('.slide-counter');
+            if (c) c.innerText = `Slide ${i + 1}`;
         });
     }
 
@@ -105,10 +109,10 @@
         const div = document.createElement('div');
         div.className = 'slide';
         div.innerHTML = `
-            <div class="slide-ctrl"><button class="btn btn-del" style="font-size:30px; padding:10px 20px;" onclick="this.closest('.slide').remove(); updateSlideNumbers();">X</button></div>
+            <div class="slide-ctrl"><button class="btn btn-del" onclick="this.closest('.slide').remove(); updateSlideNumbers();">X</button></div>
             <div class="intro-area">
-                <div class="main-t" contenteditable="true" id="reportTitle">DEEP CLEANING DRIVE</div>
-                <div style="font-size:24px; font-weight:bold; color:#444;" contenteditable="true">Maintaining Hygiene, Ensuring Safety</div>
+                <div class="main-t" contenteditable="true" spellcheck="false">DEEP CLEANING DRIVE</div>
+                <div style="font-size:24px; font-weight:bold; color:#444; margin-top:10px;" contenteditable="true">Maintaining Hygiene, Ensuring Safety</div>
             </div>
             <div class="slide-counter">Slide</div>
         `;
@@ -126,10 +130,10 @@
             grid.className = 'photo-grid';
             await loadToGrid(files[i], grid);
             if (files[i+1]) await loadToGrid(files[i+1], grid);
-            div.innerHTML = `<div class="slide-ctrl"><button class="btn btn-del" style="font-size:30px; padding:10px 20px;" onclick="this.closest('.slide').remove(); updateSlideNumbers();">X</button></div><div class="slide-counter">Slide</div>`;
+            div.innerHTML = `<div class="slide-ctrl"><button class="btn btn-del" onclick="this.closest('.slide').remove(); updateSlideNumbers();">X</button></div><div class="slide-counter">Slide</div>`;
             div.appendChild(grid);
             container.appendChild(div);
-            new Sortable(grid, { group: 'shared-photos', animation: 200, delay: 200, delayOnTouchOnly: true });
+            new Sortable(grid, { group: 'shared', animation: 150 });
         }
         updateSlideNumbers();
     }
@@ -140,7 +144,7 @@
             r.onload = (e) => {
                 const item = document.createElement('div');
                 item.className = 'photo-item';
-                item.innerHTML = `<img src="${e.target.result}"><div class="text-overlay">BEFORE</div><div class="label-selector"><button class="select-btn" onclick="setLabel(this, 'BEFORE')">BEFORE</button><button class="select-btn" onclick="setLabel(this, 'AFTER')">AFTER</button><button class="select-btn" style="background:#ef4444" onclick="closeSelector(this)">CLOSE</button></div><div class="photo-actions"><button class="mini-btn" onclick="openSelector(this)">🏷️ Label</button><button class="mini-btn" style="background:red;" onclick="this.closest('.photo-item').remove()">X</button></div>`;
+                item.innerHTML = `<img src="${e.target.result}"><div class="text-overlay">BEFORE</div><div class="label-selector"><button class="select-btn" onclick="setLabel(this, 'BEFORE')">BEFORE</button><button class="select-btn" onclick="setLabel(this, 'AFTER')">AFTER</button><button class="select-btn" style="background:#ef4444" onclick="closeSelector(this)">CLOSE</button></div><div class="photo-actions"><button class="mini-btn" onclick="openSelector(this)">LABEL</button><button class="mini-btn" style="background:red;" onclick="this.closest('.photo-item').remove()">X</button></div>`;
                 parent.appendChild(item);
                 res();
             };
@@ -150,39 +154,36 @@
 
     function openSelector(btn) { btn.closest('.photo-item').querySelector('.label-selector').style.display = 'flex'; }
     function closeSelector(btn) { btn.closest('.label-selector').style.display = 'none'; }
-    function setLabel(btn, text) { const item = btn.closest('.photo-item'); const overlay = item.querySelector('.text-overlay'); overlay.innerText = text; overlay.style.display = 'block'; item.querySelector('.label-selector').style.display = 'none'; }
+    function setLabel(btn, text) { const item = btn.closest('.photo-item'); const o = item.querySelector('.text-overlay'); o.innerText = text; o.style.display = 'block'; closeSelector(btn); }
 
     async function saveAsPDF() {
         const slides = document.querySelectorAll('.slide');
-        if (slides.length === 0) return alert("स्लाईड्स तयार करा!");
-        const quality = parseFloat(document.getElementById('qualitySelect').value);
+        if (slides.length === 0) return;
+        document.getElementById('loader').style.display = 'flex';
+        
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'px', [960, 540]);
-        for (let i = 0; i < slides.length; i++) {
-            slides[i].querySelectorAll('.slide-ctrl, .photo-actions, .label-selector, .slide-counter').forEach(el => el.style.visibility = 'hidden');
-            const canvas = await html2canvas(slides[i], { scale: quality, useCORS: true, logging: false });
-            slides[i].querySelectorAll('.slide-ctrl, .photo-actions, .label-selector, .slide-counter').forEach(el => el.style.visibility = 'visible');
-            if (i > 0) doc.addPage();
-            doc.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, 960, 540);
-        }
-        const title = document.getElementById('reportTitle').innerText.trim().replace(/\s+/g, '_');
-        const date = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-        doc.save(`${title}_${date}.pdf`);
-    }
 
-    async function saveAsJPG() {
-        const slides = document.querySelectorAll('.slide');
-        if (slides.length === 0) return alert("स्लाईड्स तयार करा!");
-        const quality = parseFloat(document.getElementById('qualitySelect').value);
         for (let i = 0; i < slides.length; i++) {
-            slides[i].querySelectorAll('.slide-ctrl, .photo-actions, .label-selector, .slide-counter').forEach(el => el.style.visibility = 'hidden');
-            const canvas = await html2canvas(slides[i], { scale: quality, useCORS: true, logging: false });
-            slides[i].querySelectorAll('.slide-ctrl, .photo-actions, .label-selector, .slide-counter').forEach(el => el.style.visibility = 'visible');
-            const link = document.createElement('a');
-            link.download = `Slide_${i+1}.jpg`;
-            link.href = canvas.toDataURL('image/jpeg', 0.9);
-            link.click();
+            // लपवा नियंत्रणे
+            slides[i].querySelectorAll('.slide-ctrl, .photo-actions, .label-selector, .slide-counter').forEach(el => el.style.display = 'none');
+            
+            const canvas = await html2canvas(slides[i], { 
+                scale: 3, // हाय क्वालिटीसाठी स्केल वाढवला
+                useCORS: true, 
+                logging: false,
+                allowTaint: true
+            });
+            
+            slides[i].querySelectorAll('.slide-ctrl, .photo-actions, .label-selector, .slide-counter').forEach(el => el.style.display = 'flex');
+
+            if (i > 0) doc.addPage();
+            doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 960, 540);
         }
+        
+        const date = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+        doc.save(`Report_${date}.pdf`);
+        document.getElementById('loader').style.display = 'none';
     }
 </script>
 </body>
